@@ -8,3 +8,5 @@ export { AddEquipmentForm } from './AddEquipmentForm';
 export { GrandTotalFooter } from './GrandTotalFooter';
 export { EmptyState } from './EmptyState';
 export { CalculationRules } from './CalculationRules';
+export { InvoiceHeader } from './InvoiceHeader';
+export type { InvoiceMeta } from './InvoiceHeader';

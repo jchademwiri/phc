@@ -5,19 +5,31 @@ import {
   EquipmentCard,
   AddEquipmentForm,
   RatesConfig,
+  InvoiceHeader,
   GrandTotalFooter,
   EmptyState,
   CalculationRules,
 } from './components';
+import type { InvoiceMeta } from './components';
 import { useEquipmentManager, useGrandTotal } from './hooks';
 import { EQUIPMENT_PRESETS } from './utils/constants';
 import type { EquipmentPreset } from './types';
+
+const META_KEY = 'phc-invoice-meta-v1';
+
+const defaultMeta = (): InvoiceMeta => ({
+  clientName: '',
+  invoiceNumber: '',
+  poReference: '',
+});
 
 const PlantHireCalculator: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [hasLoadedMonthFromStorage, setHasLoadedMonthFromStorage] = useState(false);
   const [vatEnabled, setVatEnabled] = useState(false);
   const [hasLoadedVatFromStorage, setHasLoadedVatFromStorage] = useState(false);
+  const [invoiceMeta, setInvoiceMeta] = useState<InvoiceMeta>(defaultMeta());
+  const [hasLoadedMetaFromStorage, setHasLoadedMetaFromStorage] = useState(false);
   const [newEquipmentName, setNewEquipmentName] = useState('');
   const [newDailyRate, setNewDailyRate] = useState('');
   const [activeRateEquipmentId, setActiveRateEquipmentId] = useState('');
@@ -92,6 +104,33 @@ const PlantHireCalculator: React.FC = () => {
   }, [vatEnabled, hasLoadedVatFromStorage]);
 
   useEffect(() => {
+    try {
+      const raw = localStorage.getItem(META_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as Partial<InvoiceMeta>;
+        setInvoiceMeta({
+          clientName: typeof parsed.clientName === 'string' ? parsed.clientName : '',
+          invoiceNumber: typeof parsed.invoiceNumber === 'string' ? parsed.invoiceNumber : '',
+          poReference: typeof parsed.poReference === 'string' ? parsed.poReference : '',
+        });
+      }
+    } catch {
+      // ignore
+    } finally {
+      setHasLoadedMetaFromStorage(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!hasLoadedMetaFromStorage) return;
+    try {
+      localStorage.setItem(META_KEY, JSON.stringify(invoiceMeta));
+    } catch {
+      // ignore
+    }
+  }, [invoiceMeta, hasLoadedMetaFromStorage]);
+
+  useEffect(() => {
     if (equipment.length === 0) {
       setActiveRateEquipmentId('');
       return;
@@ -156,6 +195,8 @@ const PlantHireCalculator: React.FC = () => {
             </button>
           )}
         </div>
+
+        <InvoiceHeader meta={invoiceMeta} onChange={setInvoiceMeta} />
 
         {/* Add Equipment Form */}
         <AddEquipmentForm

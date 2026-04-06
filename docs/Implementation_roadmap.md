@@ -39,6 +39,14 @@
 | 4 | Duplicate equipment + New Month workflow | ~25 min | Complete feature |
 | 5 | Print / PDF-ready invoice view | ~45 min | Complete feature |
 
+### Progress Status (Current Implementation)
+
+- ✅ **Phase 1 completed**
+- ✅ **Phase 2 completed**
+- ⏳ **Phase 3 not started**
+- ⏳ **Phase 4 not started (hook support prepared in Phase 1)**
+- ⏳ **Phase 5 not started**
+
 ---
 
 ## Phase 1 — localStorage Persistence + State Fix
@@ -232,6 +240,12 @@ Do not change anything else.
 ### ✅ Ship checkpoint
 Run `bun dev`. Refresh the page — your equipment, rates, and idle days should survive. The green "Auto-saved" pulse should be visible in the header.
 
+### Implementation notes (actual)
+
+- Added hydration-safe localStorage loading (load persisted values in `useEffect` after mount).
+- Added guarded persistence writes so defaults do not overwrite saved data on first render.
+- `useEquipmentManager` includes functional updates and localStorage persistence.
+
 ---
 
 ## Phase 2 — VAT Toggle (15%)
@@ -393,6 +407,25 @@ With:
 
 ### ✅ Ship checkpoint
 The footer now shows the month name. Click "VAT 15%" — it toggles amber and shows the inclusive total. Click "Show breakdown" to see the three-column split.
+
+### Implementation notes (actual)
+
+- VAT layout was refined for space efficiency:
+  - breakdown now shows compactly in the footer (sub-total excl. VAT + VAT amount),
+  - inclusive total remains the large main number in the footer.
+- VAT toggle state is now persisted in localStorage (`phc-vat-v1`).
+- VAT state was lifted to `index.tsx` and passed into `GrandTotalFooter` as props.
+
+---
+
+## UX Refinements Implemented (Beyond Original Phases)
+
+- `RatesConfig` was moved out of each equipment card to reduce vertical clutter.
+- A header-level `Configure Rates` button now opens a compact overlay panel.
+- Active equipment for rate editing is explicit:
+  - selecting/clicking a card sets it as active,
+  - active card is highlighted and shows an "Editing rates" badge.
+- Spacing in the top layout was tightened so key information remains visible with less scrolling.
 
 ---
 
