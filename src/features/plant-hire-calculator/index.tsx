@@ -122,6 +122,7 @@ const PlantHireCalculator: React.FC = () => {
           <GrandTotalFooter 
             total={grandTotal}
             equipmentCount={equipment.length}
+            currentMonth={currentMonth}
           />
         )}
 
