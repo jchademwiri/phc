@@ -1,4 +1,4 @@
-import PlantHireCalculator from "@/components/PlantHireCalculator";
+import PlantHireCalculator from "@/features/plant-hire-calculator";
 
 export default function Home() {
   return (
