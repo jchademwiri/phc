@@ -16,6 +16,8 @@ import type { EquipmentPreset } from './types';
 const PlantHireCalculator: React.FC = () => {
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
   const [hasLoadedMonthFromStorage, setHasLoadedMonthFromStorage] = useState(false);
+  const [vatEnabled, setVatEnabled] = useState(false);
+  const [hasLoadedVatFromStorage, setHasLoadedVatFromStorage] = useState(false);
   const [newEquipmentName, setNewEquipmentName] = useState('');
   const [newDailyRate, setNewDailyRate] = useState('');
   const [activeRateEquipmentId, setActiveRateEquipmentId] = useState('');
@@ -25,10 +27,8 @@ const PlantHireCalculator: React.FC = () => {
     equipment,
     addEquipment,
     removeEquipment,
-    duplicateEquipment,
     updateIdleDays,
     updateRates,
-    clearMonthIdleDays,
   } = useEquipmentManager();
 
   useEffect(() => {
@@ -72,6 +72,26 @@ const PlantHireCalculator: React.FC = () => {
   };
 
   useEffect(() => {
+    try {
+      const savedVat = localStorage.getItem('phc-vat-v1');
+      if (savedVat === 'true') setVatEnabled(true);
+    } catch {
+      // ignore
+    } finally {
+      setHasLoadedVatFromStorage(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!hasLoadedVatFromStorage) return;
+    try {
+      localStorage.setItem('phc-vat-v1', vatEnabled ? 'true' : 'false');
+    } catch {
+      // ignore
+    }
+  }, [vatEnabled, hasLoadedVatFromStorage]);
+
+  useEffect(() => {
     if (equipment.length === 0) {
       setActiveRateEquipmentId('');
       return;
@@ -83,8 +103,8 @@ const PlantHireCalculator: React.FC = () => {
   }, [equipment, activeRateEquipmentId]);
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-emerald-50 via-slate-50 to-teal-50 p-4 md:p-8 font-sans text-slate-800">
-      <div className="max-w-5xl mx-auto space-y-8">
+    <div className="min-h-screen bg-linear-to-br from-emerald-50 via-slate-50 to-teal-50 p-3 md:p-6 font-sans text-slate-800">
+      <div className="max-w-5xl mx-auto space-y-5 md:space-y-6">
         {showRatesPanel && activeRateEquipment && (
           <div className="fixed inset-0 z-40">
             <button
@@ -114,9 +134,9 @@ const PlantHireCalculator: React.FC = () => {
         )}
 
         {/* Header Section */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-3">
           <div>
-            <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-emerald-700 to-teal-600 mb-2">
+            <h1 className="text-3xl md:text-4xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-emerald-700 to-teal-600 mb-1.5">
               Plant Hire Calculator
             </h1>
             <p className="text-slate-500 font-medium text-sm">
@@ -130,7 +150,7 @@ const PlantHireCalculator: React.FC = () => {
           {activeRateEquipment && (
             <button
               onClick={() => setShowRatesPanel(true)}
-              className="inline-flex items-center px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              className="inline-flex items-center px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-xs md:text-sm font-semibold text-slate-700 hover:bg-slate-50"
             >
               Configure Rates
             </button>
@@ -158,6 +178,8 @@ const PlantHireCalculator: React.FC = () => {
                 key={item.id} 
                 item={item} 
                 currentMonth={currentMonth}
+                isActive={item.id === activeRateEquipmentId}
+                onSelect={() => setActiveRateEquipmentId(item.id)}
                 onRemove={() => removeEquipment(item.id)}
                 onUpdateIdleDays={(days) => updateIdleDays(item.id, days)}
                 onMonthChange={setCurrentMonth}
@@ -172,6 +194,8 @@ const PlantHireCalculator: React.FC = () => {
             total={grandTotal}
             equipmentCount={equipment.length}
             currentMonth={currentMonth}
+            vatEnabled={vatEnabled}
+            onVatToggle={() => setVatEnabled((v) => !v)}
           />
         )}
 

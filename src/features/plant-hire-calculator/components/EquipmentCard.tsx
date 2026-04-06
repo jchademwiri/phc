@@ -10,6 +10,8 @@ import { InvoiceBreakdown } from './InvoiceBreakdown';
 interface EquipmentCardProps {
   item: Equipment;
   currentMonth: Date;
+  isActive: boolean;
+  onSelect: () => void;
   onRemove: () => void;
   onUpdateIdleDays: (days: Date[]) => void;
   onMonthChange: (date: Date) => void;
@@ -18,6 +20,8 @@ interface EquipmentCardProps {
 export const EquipmentCard: React.FC<EquipmentCardProps> = ({ 
   item, 
   currentMonth, 
+  isActive,
+  onSelect,
   onRemove, 
   onUpdateIdleDays, 
   onMonthChange 
@@ -53,18 +57,32 @@ export const EquipmentCard: React.FC<EquipmentCardProps> = ({
   });
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden hover:shadow-md transition-shadow group">
+    <div
+      className={`bg-white rounded-xl shadow-sm border overflow-hidden hover:shadow-md transition-shadow group ${
+        isActive ? 'border-emerald-300 ring-1 ring-emerald-200' : 'border-slate-200'
+      }`}
+    >
       {/* Header */}
       <div 
         className="bg-slate-50 border-b border-slate-100 p-3 flex justify-between items-center cursor-pointer hover:bg-slate-100 transition-colors select-none"
-        onClick={() => setIsCollapsed(!isCollapsed)}
+        onClick={() => {
+          onSelect();
+          setIsCollapsed(!isCollapsed);
+        }}
       >
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-emerald-100 rounded-lg flex items-center justify-center text-emerald-600 group-hover:scale-110 transition-transform">
             <Calculator className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="font-bold text-base text-slate-800">{item.name}</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="font-bold text-base text-slate-800">{item.name}</h3>
+              {isActive && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 font-semibold">
+                  Editing rates
+                </span>
+              )}
+            </div>
             <p className="text-xs text-slate-500 font-medium">{formatCurrency(item.rates.weekday)} (Base)</p>
           </div>
         </div>

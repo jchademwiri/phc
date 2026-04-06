@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Info, ToggleLeft, ToggleRight } from 'lucide-react';
 import { formatCurrency } from '../utils/calculations';
 
@@ -10,15 +10,17 @@ interface GrandTotalFooterProps {
   total: number;
   equipmentCount: number;
   currentMonth: Date;
+  vatEnabled: boolean;
+  onVatToggle: () => void;
 }
 
 export const GrandTotalFooter: React.FC<GrandTotalFooterProps> = ({
   total,
   equipmentCount,
   currentMonth,
+  vatEnabled,
+  onVatToggle,
 }) => {
-  const [vatEnabled, setVatEnabled] = useState(false);
-
   const vatAmount = vatEnabled ? total * VAT_RATE : 0;
   const totalIncVat = total + vatAmount;
 
@@ -58,7 +60,7 @@ export const GrandTotalFooter: React.FC<GrandTotalFooterProps> = ({
             </div>
 
             <button
-              onClick={() => setVatEnabled((v) => !v)}
+              onClick={onVatToggle}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border ${
                 vatEnabled
                   ? 'bg-amber-500 text-amber-950 border-amber-400 hover:bg-amber-400'
