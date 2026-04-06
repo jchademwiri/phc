@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import {
   EquipmentCard,
   AddEquipmentForm,
+  RatesConfig,
   GrandTotalFooter,
   EmptyState,
   CalculationRules,
@@ -17,6 +18,8 @@ const PlantHireCalculator: React.FC = () => {
   const [hasLoadedMonthFromStorage, setHasLoadedMonthFromStorage] = useState(false);
   const [newEquipmentName, setNewEquipmentName] = useState('');
   const [newDailyRate, setNewDailyRate] = useState('');
+  const [activeRateEquipmentId, setActiveRateEquipmentId] = useState('');
+  const [showRatesPanel, setShowRatesPanel] = useState(false);
 
   const {
     equipment,
@@ -54,6 +57,7 @@ const PlantHireCalculator: React.FC = () => {
   }, [currentMonth, hasLoadedMonthFromStorage]);
 
   const grandTotal = useGrandTotal(equipment, currentMonth);
+  const activeRateEquipment = equipment.find((item) => item.id === activeRateEquipmentId);
 
   const handleAddEquipment = (e: React.FormEvent) => {
     e?.preventDefault();
@@ -67,10 +71,48 @@ const PlantHireCalculator: React.FC = () => {
     setNewDailyRate(preset.rate.toString());
   };
 
+  useEffect(() => {
+    if (equipment.length === 0) {
+      setActiveRateEquipmentId('');
+      return;
+    }
+    const selectedStillExists = equipment.some((item) => item.id === activeRateEquipmentId);
+    if (!selectedStillExists) {
+      setActiveRateEquipmentId(equipment[0].id);
+    }
+  }, [equipment, activeRateEquipmentId]);
+
   return (
     <div className="min-h-screen bg-linear-to-br from-emerald-50 via-slate-50 to-teal-50 p-4 md:p-8 font-sans text-slate-800">
       <div className="max-w-5xl mx-auto space-y-8">
-        
+        {showRatesPanel && activeRateEquipment && (
+          <div className="fixed inset-0 z-40">
+            <button
+              aria-label="Close rates panel overlay"
+              className="absolute inset-0 bg-black/25"
+              onClick={() => setShowRatesPanel(false)}
+            />
+            <div className="absolute top-4 right-4 w-[360px] max-w-[calc(100vw-2rem)] bg-white border border-slate-200 rounded-xl shadow-2xl p-3">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wide">Rates Config</h3>
+                <button
+                  onClick={() => setShowRatesPanel(false)}
+                  className="text-xs text-slate-500 hover:text-slate-700"
+                >
+                  Close
+                </button>
+              </div>
+              <p className="mb-2 text-[11px] text-slate-500">
+                Editing: <span className="font-semibold text-slate-700">{activeRateEquipment.name}</span>
+              </p>
+              <RatesConfig
+                rates={activeRateEquipment.rates}
+                onRatesChange={(newRates) => updateRates(activeRateEquipment.id, newRates)}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
           <div>
@@ -85,6 +127,14 @@ const PlantHireCalculator: React.FC = () => {
               </span>
             </p>
           </div>
+          {activeRateEquipment && (
+            <button
+              onClick={() => setShowRatesPanel(true)}
+              className="inline-flex items-center px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50"
+            >
+              Configure Rates
+            </button>
+          )}
         </div>
 
         {/* Add Equipment Form */}
@@ -110,7 +160,6 @@ const PlantHireCalculator: React.FC = () => {
                 currentMonth={currentMonth}
                 onRemove={() => removeEquipment(item.id)}
                 onUpdateIdleDays={(days) => updateIdleDays(item.id, days)}
-                onUpdateRates={(newRates) => updateRates(item.id, newRates)}
                 onMonthChange={setCurrentMonth}
               />
             ))

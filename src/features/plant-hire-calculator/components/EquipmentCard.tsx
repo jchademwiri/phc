@@ -5,7 +5,6 @@ import { formatCurrency, calculatePeriods, getSAHolidays, calculateLineTotal } f
 import { DayPicker } from './DayPicker';
 import { MonthNavigator } from './MonthNavigator';
 import { QuickIdleButtons } from './QuickIdleButtons';
-import { RatesConfig } from './RatesConfig';
 import { InvoiceBreakdown } from './InvoiceBreakdown';
 
 interface EquipmentCardProps {
@@ -13,7 +12,6 @@ interface EquipmentCardProps {
   currentMonth: Date;
   onRemove: () => void;
   onUpdateIdleDays: (days: Date[]) => void;
-  onUpdateRates: (rates: Rates) => void;
   onMonthChange: (date: Date) => void;
 }
 
@@ -22,7 +20,6 @@ export const EquipmentCard: React.FC<EquipmentCardProps> = ({
   currentMonth, 
   onRemove, 
   onUpdateIdleDays, 
-  onUpdateRates, 
   onMonthChange 
 }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -118,11 +115,6 @@ export const EquipmentCard: React.FC<EquipmentCardProps> = ({
                   onDaysChange={onUpdateIdleDays}
                 />
               </div>
-
-              <RatesConfig 
-                rates={item.rates}
-                onRatesChange={onUpdateRates}
-              />
            </div>
 
            {/* Right: Invoice Rows */}
