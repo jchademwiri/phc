@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   EquipmentCard,
   AddEquipmentForm,
@@ -13,7 +13,8 @@ import { EQUIPMENT_PRESETS } from './utils/constants';
 import type { EquipmentPreset } from './types';
 
 const PlantHireCalculator: React.FC = () => {
-  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+  const [hasLoadedMonthFromStorage, setHasLoadedMonthFromStorage] = useState(false);
   const [newEquipmentName, setNewEquipmentName] = useState('');
   const [newDailyRate, setNewDailyRate] = useState('');
 
@@ -21,9 +22,36 @@ const PlantHireCalculator: React.FC = () => {
     equipment,
     addEquipment,
     removeEquipment,
+    duplicateEquipment,
     updateIdleDays,
     updateRates,
+    clearMonthIdleDays,
   } = useEquipmentManager();
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('phc-month-v1');
+      if (saved) {
+        const d = new Date(saved);
+        if (!isNaN(d.getTime())) {
+          setCurrentMonth(d);
+        }
+      }
+    } catch {
+      // ignore
+    } finally {
+      setHasLoadedMonthFromStorage(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!hasLoadedMonthFromStorage) return;
+    try {
+      localStorage.setItem('phc-month-v1', currentMonth.toISOString());
+    } catch {
+      // ignore
+    }
+  }, [currentMonth, hasLoadedMonthFromStorage]);
 
   const grandTotal = useGrandTotal(equipment, currentMonth);
 
@@ -49,8 +77,12 @@ const PlantHireCalculator: React.FC = () => {
             <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-emerald-700 to-teal-600 mb-2">
               Plant Hire Calculator
             </h1>
-            <p className="text-slate-500 font-medium">
-              Strict period discounting (Gaps break continuity)
+            <p className="text-slate-500 font-medium text-sm">
+              Strict period discounting · South Africa
+              <span className="ml-3 inline-flex items-center gap-1.5 text-emerald-600 text-xs font-semibold">
+                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
+                Auto-saved
+              </span>
             </p>
           </div>
         </div>
